@@ -38,9 +38,9 @@ Set up your IDE to use the virtualenv you have just created. If you are using Ec
 
 1. Highlight the sandbar project, right click, and Refresh. You should see env directory appear
 2. Go to Preferences and set up a new python interpretor using the one in the virtualenv that you just created. 3. On Macs/linux you may also need to set up a couple of environment variables (TNS_ADMIN and DYLD_LIBRARY_PATH)
-4. Highlight the sandbar project, right click, and select Properties. Change the interpreter to use the one you just set up.
-5. Highlight the sandbar project, right click, and select PyDev and Change to Django project.
-6. Highlight the sandbar project, right click, and select Properties.In PyDev - Django, set manage.py to manage.py and Django settings module to sandbar_project.settings
+3. Highlight the sandbar project, right click, and select Properties. Change the interpreter to use the one you just set up.
+4. Highlight the sandbar project, right click, and select PyDev and Change to Django project.
+5. Highlight the sandbar project, right click, and select Properties.In PyDev - Django, set manage.py to manage.py and Django settings module to sandbar_project.settings
 
 ### Step 5
 
@@ -110,7 +110,7 @@ wsgi
 
 Build process (probably total overkill for your environment.  This basically zips up the directories and puts them into our nexus repository so that the deploy process can pull the zip file back down, copy it to the approprate application server and unzip it.  This can be done manually if necessary.):
 
-```
+```Bash
 source /etc/profile.d/oracle.sh;
 cd sandbar;
 virtualenv --no-site-packages --python=python2.7 env;
@@ -143,7 +143,7 @@ fi
 
 Deployment process:
 
-```
+```Bash
 #reset workspace
 rm -rf artifact
 rm -f artifact.zip

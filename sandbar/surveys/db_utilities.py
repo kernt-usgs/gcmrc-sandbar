@@ -55,7 +55,7 @@ class AlchemDB(object):
     
     def __init__(self, schema=SCHEMA_USER, password=DB_PWD, db_name=DB_NAME):
         
-        self.connect = 'oracle+cx_oracle://%s:%s@%s' % (schema, password, db_name)
+        self.connect = 'db+mysqldb://%s:%s@%s' % (schema, password, db_name)
         self.engine = create_engine(self.connect)
                
     def create_session(self):

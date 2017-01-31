@@ -31,7 +31,7 @@ else:
 if RUNNING_TESTS:
     DATABASES = { 
         'default': {
-            'ENGINE': 'django.contrib.gis.db.backends.postgis', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+            'ENGINE': 'django.contrib.gis.db.backends.postgis', # Add 'postgresql_psycopg2', 'postgresql', 'db', 'sqlite3' or 'oracle'.
             'NAME': 'test_geodjango_db',                      # Or path to database file if using sqlite3.
             'USER': 'djangotest',                     # Not used with sqlite3.
             'PASSWORD': DJANGOTEST_PWD,                  # Not used with sqlite3.
@@ -44,7 +44,7 @@ else:
     # Default engine. Should be overridden in local_settings.py to connect to sandbar databases
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+            'ENGINE': 'django.db.backends.sqlite', # Add 'postgresql_psycopg2', 'db', 'sqlite3' or 'oracle'.
             'NAME': os.path.join(SITE_HOME, 'sqlite.db'),                      # Or path to database file if using sqlite3.
             # The following settings are not used with sqlite3:
             'USER': '',

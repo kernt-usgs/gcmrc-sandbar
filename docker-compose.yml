@@ -1,0 +1,33 @@
+# docker-compose up
+version: '2'
+services:
+  web:
+    build:
+      dockerfile: Dockerfile-dev
+      context: ./sandbar
+    environment:
+      DJANGO_SETTINGS_MODULE: sandbar_project.settings
+      SCHEMA_USER: root
+      DB_PWD: root
+      DB_NAME: djangoDB
+      DB_HOST: db
+      DB_PORT: 3306
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./sandbar:/usr/src/app
+    links:
+      - db
+    ports:
+      - "8080:8000"
+  db:
+    image: mysql:latest
+    ports:
+      - "13306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./db:/tmp/db
+      - ./.mysql:/var/lib/mysql
+    #    command: sh ./tmp/db/init.sh
+
+# NOTE: Need to build 'docker built -t sandbarapp .' in order to have everything installed first
