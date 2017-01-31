@@ -12,11 +12,11 @@ DEBUG = True
 #SOUTH_LOGGING_FILE = os.path.join(os.path.dirname(__file__),"south.log")
 #SOUTH_LOGGING_ON = True
 
-SCHEMA_USER = os.environ['SCHEMA_USER']
-DB_PWD = os.environ['DB_PWD']
-DB_NAME = os.environ['DB_NAME']
-DB_HOST = os.environ['DB_HOST']
-DB_PORT = os.environ['DB_PORT']
+SCHEMA_USER = os.getenv('SCHEMA_USER')
+DB_PWD = os.getenv('DB_PWD')
+DB_NAME = os.getenv('DB_NAME')
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
 
 DJANGOTEST_PWD = 'root'
 

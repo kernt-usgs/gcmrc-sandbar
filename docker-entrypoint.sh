@@ -13,8 +13,8 @@ tail -n 0 -f /etc/awslogs/*.log &
 
 # Start Gunicorn processes
 echo Starting Gunicorn.
-exec gunicorn hello.wsgi:application \
-    --name hello_django \
+exec gunicorn ./wsgi/sandbar \
+    --name sandbar \
     --bind 0.0.0.0:8000 \
     --workers 3 \
     --log-level=info \

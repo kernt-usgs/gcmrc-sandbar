@@ -33,7 +33,7 @@ COPY ./docker-entrypoint.sh /usr/src/
 
 # Prepare log files and start outputting logs to stdout
 
-# docker run -e "SCHEMA_USER=root;DB_PORT=13306;DB_NAME=SandbarData;DB_PWD=root;DB_HOST=192.168.0.108" -it sandbarprod /bin/bash
+# docker run -e "SCHEMA_USER=root" -e "DB_PORT=13306" -e "DB_NAME=SandbarData" -e "DB_PWD=root" -e "DB_HOST=192.168.0.108" -it sandbarprod /bin/bash
 
 # DEbugging live
 #docker run --rm -it \

@@ -279,7 +279,7 @@ class SitesListView(ListView):
             result.append({'site' : site,
                            'survey' : AreaVolume.objects.filter(site=site).aggregate(min_date=Min('calc_date'),
                                                                                  max_date=Max('calc_date'))})
-        return result    
+        return result
 
 
 class SiteDetailView(DetailView):

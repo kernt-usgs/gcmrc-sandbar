@@ -50,11 +50,11 @@ Lists and maps all sandbar monitoring sites.
 			</thead>
 			<tbody>
 				{% for site in site_list %}
-					<tr data-site-id="{{ site.site.id }}" data-geom-x="{{ site.site.geom.x }}" data-geom-y="{{ site.site.geom.y }}">
+					<tr data-site-id="{{ site.site.id }}" data-geom-x="{{ site.site.longitude}}" data-geom-y="{{ site.site.latitude }}">
 						<td></td><!-- This will be for the site thumbnail -->
 						<td class="river-mile-cell">{{ site.site.river_mile }}</td>
 						<td class="site-name-cell"><a href="{% url 'surveys-site' pk=site.site.id %}">{{ site.site.site_name }}</a></td>
-						<td class="survey-date-range-cell">{{ site.survey.min_date }} - {{site.survey.max_date }}</td>
+						<td class="survey-date-range-cell">{{ site.survey.min_date|date:"M d, Y" }} - {{site.survey.max_date|date:"M d, Y" }}</td>
 						<td></td>
 					</tr>
 				{% endfor %}

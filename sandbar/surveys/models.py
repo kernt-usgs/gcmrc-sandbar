@@ -39,9 +39,12 @@ class Site(models.Model):
     gdaws_site_display = models.CharField(max_length=100, blank=True)
     secondary_gdaws_site_id = models.CharField(max_length=40, blank=True)
     second_gdaws_site_disp = models.CharField(max_length=100, blank=True)
+
+    latitude = models.DecimalField(max_digits= 16, decimal_places=13, null=True)
+    longitude = models.DecimalField(max_digits= 16, decimal_places=13, null=True)
     
     class Meta:
-        db_table = 'sites'
+        db_table = 'vwsite'
         unique_together = ('river_mile', 'site_name')
         
     objects = models.GeoManager()
@@ -87,7 +90,7 @@ class Survey(models.Model):
     sandbar_id = models.IntegerField(null=True)
     
     class Meta:
-        db_table = 'surveys'
+        db_table = 'vwsurvey'
         
     def __unicode__(self):
         return str(self.site) + '-' + str(self.sandbar_id) + ' on ' + str(self.survey_date) + ' for ' + str(self.calc_type) + ' at ' + str(self.discharge)
@@ -99,7 +102,7 @@ class Sandbar(models.Model):
     sandbar_name = models.CharField(max_length=20)
     
     class Meta:
-        db_table = 'site_sandbar_rel'
+        db_table = 'vwsandbar'
         unique_together = ('site', 'sandbar_name')
     
     def __unicode__(self):
@@ -137,7 +140,7 @@ class AreaVolume(models.Model):
     next_plane_height = models.DecimalField(max_digits=20, decimal_places=9, null=True)
     
     class Meta:
-        db_table = 'area_volume_calc'
+        db_table = 'vwareavolume'
         unique_together = ('site', 'sandbar', 'calc_date', 'calc_type', 'plane_height','prev_plane_height','next_plane_height')
         
     def __unicode__(self):
