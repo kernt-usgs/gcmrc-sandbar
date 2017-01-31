@@ -9,7 +9,7 @@ services:
       DJANGO_SETTINGS_MODULE: sandbar_project.settings
       SCHEMA_USER: root
       DB_PWD: root
-      DB_NAME: djangoDB
+      DB_NAME: SandbarData
       DB_HOST: db
       DB_PORT: 3306
     command: python manage.py runserver 0.0.0.0:8000

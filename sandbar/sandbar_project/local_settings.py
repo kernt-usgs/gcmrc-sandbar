@@ -12,12 +12,13 @@ DEBUG = True
 #SOUTH_LOGGING_FILE = os.path.join(os.path.dirname(__file__),"south.log")
 #SOUTH_LOGGING_ON = True
 
-SCHEMA_USER = 'sandbar'
-DB_PWD = '<password>'
-DB_NAME = 'DBDW.ER.USGS.GOV'
+SCHEMA_USER = os.environ['SCHEMA_USER']
+DB_PWD = os.environ['DB_PWD']
+DB_NAME = os.environ['DB_NAME']
+DB_HOST = os.environ['DB_HOST']
+DB_PORT = os.environ['DB_PORT']
 
-DJANGOTEST_PWD = '<password>'
-
+DJANGOTEST_PWD = 'root'
 
 # This checks to see if django tests are running (i.e. manage.py test)
 if argv and 1 < len(argv):
@@ -28,20 +29,12 @@ else:
 if not RUNNING_TESTS:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.contrib.gis.db.backends.oracle', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-            'NAME': 'cida-eros-dbdw.er.usgs.gov:1521/dbdw.er.usgs.gov',  # Or path to database file if using sqlite3.
-            'USER': 'sandbar_user',                     # Not used with sqlite3.
-            'PASSWORD': '<password>',                  # Not used with sqlite3.
-            'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-            'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-        },
-        'sandbar': {
-            'ENGINE': 'django.contrib.gis.db.backends.oracle', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-            'NAME': DB_NAME,                      # Or path to database file if using sqlite3.
-            'USER': SCHEMA_USER,                     # Not used with sqlite3.
-            'PASSWORD': DB_PWD,                  # Not used with sqlite3.
-            'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-            'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+            'ENGINE': 'django.contrib.gis.db.backends.mysql',
+            'NAME': DB_NAME,
+            'USER': SCHEMA_USER,
+            'PASSWORD': DB_PWD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
         }
     }
 
@@ -52,4 +45,4 @@ STATIC_URL = '/static/'
 GDAWS_SERVICE_URL = 'http://cida-eros-gcmrcdev.er.usgs.gov:8080/gcmrc-services/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '<secret-key>'
+SECRET_KEY = 'wibbly-wobbly-timey-wimey'
