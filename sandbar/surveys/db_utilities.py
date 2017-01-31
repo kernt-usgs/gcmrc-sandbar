@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sandbar_project.local_settings import SCHEMA_USER, DB_PWD, DB_NAME
+from sqlalchemy.dialects import mysql
+from sandbar_project.local_settings import SCHEMA_USER, DB_PWD, DB_NAME, DB_HOST, DB_PORT
 from .models import Sandbar
 from .db_mappings import AreaVolumeCalcBase
 
@@ -53,9 +54,9 @@ def get_sep_reatt_ids(site_id):
 
 class AlchemDB(object): 
     
-    def __init__(self, schema=SCHEMA_USER, password=DB_PWD, db_name=DB_NAME):
+    def __init__(self, user=SCHEMA_USER, password=DB_PWD, host=DB_HOST, port=DB_PORT, db_name=DB_NAME):
         
-        self.connect = 'db+mysqldb://%s:%s@%s' % (schema, password, db_name)
+        self.connect = 'mysql+mysqldb://%s:%s@%s:%s/%s' % (user, password, host, port, db_name)
         self.engine = create_engine(self.connect)
                
     def create_session(self):

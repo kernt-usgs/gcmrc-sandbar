@@ -343,6 +343,7 @@ class BasicSiteInfoJSON(JSONResponseMixin, View):
         area_min_date_str = convert_datetime_to_str(area_calc_date_min['calc_date__min'])
         area_calc_date_max = site_filter_set.aggregate(Max('calc_date'))
         area_max_date_str = convert_datetime_to_str(area_calc_date_max['calc_date__max'])
+
         # check to see if site has separation and reattachment information
         distinct_sandbar_results = get_sep_reatt_ids(site_id)
         if len(distinct_sandbar_results) > 0:
