@@ -23,24 +23,8 @@ RUN /usr/src/env/bin/pip --timeout=120 install -r /tmp/requirements.txt
 # For some reason numpy gets the wrong version so
 RUN /usr/src/env/bin/pip install --upgrade numpy scipy pandas
 
-
-# Port to expose
-EXPOSE 8000
-
-# Copy entrypoint script into the image
-# Copy application source code to SRCDIR
-COPY . /usr/src/app/
-WORKDIR /usr/src/app/sandbar
-ENTRYPOINT ["/usr/src/app/sandbar/docker-entrypoint.sh"]
-
-
-# Prepare log files and start outputting logs to stdout
-
-# docker run -e "SCHEMA_USER=root" -e "DB_PORT=13306" -e "DB_NAME=SandbarData" -e "DB_PWD=root" -e "DB_HOST=192.168.0.108" -p 8080:8000 -it sandbarprod  /bin/bash
-# docker run -e "SCHEMA_USER=root" -e "DB_PORT=13306" -e "DB_NAME=SandbarData" -e "DB_PWD=root" -e "DB_HOST=192.168.0.108" -p 8080:8000 sandbarprod -it
-
-# DEbugging live
-#docker run --rm -it \
-#--entrypoint=/bin/bash -c "python manage.py runserver 0.0.0.0:8000" \
-#--publish=8001:8000 \
-#michal/hello_django:latest
+# NOTE:: 
+# Nothing below here on the DEV file because we handle it all 
+# with 'docker-compose.yml'.
+# We do this so that we can use different ports, different DB and 
+# also link directly to the files on the host machine.

@@ -1,6 +1,4 @@
 #!/bin/bash
-python manage.py migrate                  # Apply database migrations
-python manage.py collectstatic --noinput  # Collect static files
 
 # Set up cloudwatch logging
 mkdir -p /etc/awslogs
@@ -13,7 +11,8 @@ tail -n 0 -f /etc/awslogs/*.log &
 
 # Start Gunicorn processes
 echo Starting Gunicorn.
-exec gunicorn wsgi.sandbar \
+source /usr/src/env/bin/activate
+exec gunicorn wsgi:application \
     --name sandbar \
     --bind 0.0.0.0:8000 \
     --workers 3 \
@@ -21,3 +20,5 @@ exec gunicorn wsgi.sandbar \
     --log-file=/etc/awslogs/gunicorn.log \
     --access-logfile=/etc/awslogs/access.log \
     "$@"
+
+# gunicorn sandbar.wsgi --name sandbar --bind 0.0.0.0:8000 --workers 3 --log-level=info --log-file=/etc/awslogs/gunicorn.log --access-logfile=/etc/awslogs/access.log "$@"

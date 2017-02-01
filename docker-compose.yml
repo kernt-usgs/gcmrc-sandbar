@@ -4,7 +4,7 @@ services:
   web:
     build:
       dockerfile: Dockerfile-dev
-      context: ./sandbar
+      context: .
     environment:
       DJANGO_SETTINGS_MODULE: sandbar_project.settings
       SCHEMA_USER: root
@@ -12,13 +12,13 @@ services:
       DB_NAME: SandbarData
       DB_HOST: db
       DB_PORT: 3306
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./sandbar:/usr/src/app
+      - .:/usr/src/app
     links:
       - db
     ports:
       - "8080:8000"
+    command: /usr/src/app/sandbar/docker-entrypoint.sh
   db:
     image: mysql:latest
     ports:
@@ -28,6 +28,3 @@ services:
     volumes:
       - ./db:/tmp/db
       - ./.mysql:/var/lib/mysql
-    #    command: sh ./tmp/db/init.sh
-
-# NOTE: Need to build 'docker built -t sandbarapp .' in order to have everything installed first
