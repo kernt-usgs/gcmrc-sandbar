@@ -27,7 +27,7 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 		data: queryParams,
 		dataType: 'json',
 		complete: function(resp, status) {
-			if (status === 'successs') {
+			if (status === 'success') {
 				// Parse response and put into SB.Config.SITE_PARAMETERS
 				var respJSON = $.parseJSON(resp.responseText);
 				var data = respJSON.success.data
@@ -38,7 +38,11 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 					var template = $('#param_template').html();
 					for (var i = 0; i < data.length; i++) {
 						for (key in SB.Config.SITE_PARAMETERS) {
-							if (SB.Config.SITE_PARAMETERS[key].groupName === data[i].groupName && SB.Config.SITE_PARAMETERS[key].site === data[i].site) {
+							var sConfigGname = SB.Config.SITE_PARAMETERS[key].groupName
+							var sConfigSite = SB.Config.SITE_PARAMETERS[key].site
+							var sDataGname = data[i].groupName
+							var sDataSite = data[i].site
+							if (sConfigGname === sDataGname && sConfigSite === sDataSite) {
 								SB.Config.SITE_PARAMETERS[key].description = data[i];
 								// Only really want date portion of time strings
 								SB.Config.SITE_PARAMETERS[key].description.beginPosition = data[i].beginPosition.slice(0, 10);

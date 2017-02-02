@@ -362,8 +362,8 @@ class SandBarSitesGeoJSON(JSONResponseMixin, View):
         feature_list = []
         for site_object in sites:
             try:
-                latitude = site_object.geom.x
-                longitude = site_object.geom.y
+                latitude = site_object.latitude
+                longitude = site_object.longitude
                 point = create_geojson_point(latitude, longitude)
                 feature_id = site_object.id
                 feature = create_geojson_feature(point=point, feature_id=feature_id)
