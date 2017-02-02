@@ -10,10 +10,10 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 	}
 	var gcmrcStartDate;
 	var gcmrcEndDate;
-	
+
 	var sandbarStartDate;
 	var sandbarEndDate;
-	
+
 	//set default discharges
 	$('#ds-min').val(8000);
 	$('#ds-max').val(60000);
@@ -21,13 +21,13 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 	$('#panel-title').html('Sandbar Metrics Between Stage Elevations Associated with Discharges of ' + $('#ds-min').val() + ' and ' + $('#ds-max').val() + ' cfs (ft<sup>3</sup>/s)');
 	// Fetch the parameter display information from GCMRC
 	$.ajax({
-		url: SB.GDAWS_SERVICE + 'service/param/json/param/', 
+		url: SB.GDAWS_SERVICE + 'service/param/json/param/',
 		type: 'GET',
 		async: false,
 		data: queryParams,
 		dataType: 'json',
 		complete: function(resp, status) {
-			if (status === 'success') {
+			if (status === 'successs') {
 				// Parse response and put into SB.Config.SITE_PARAMETERS
 				var respJSON = $.parseJSON(resp.responseText);
 				var data = respJSON.success.data
@@ -47,11 +47,11 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 
 								// Create the parameters's checkbox
 								var checkboxData = {
-									paramName : key, 
+									paramName : key,
 									description : SB.Config.SITE_PARAMETERS[key].description
 								}
 								$('#parameter-checkbox-div').append(Mustache.render(template, checkboxData));
-								
+
 								// Update minDate and maxDate
 								var beginDate = new Date(data[i].beginPosition);
 								var endDate = new Date(data[i].endPosition);
@@ -65,7 +65,7 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 							}
 						}
 					}
-				
+
 					// Update the dateRange limits and set initial Dates.
 					minDateText = minDate.toISOString().slice(0,10);
 					maxDateText = maxDate.toISOString().slice(0,10);
@@ -76,16 +76,16 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 						minDate: minDateText,
 						maxDate: maxDateText
 					});
-					
+
 					$('#parameter-checkbox-div').prop('disabled', false);
 				}
 				else {
-					$('#update-plots-button').prop('disabled', true);
+					$('#update-plots-button').prop('disabled', false);
 					$('#parameter-checkbox-div').append('<span class="text-danger">No data is available for the default GDAWS site, ' + gdawsSiteId + '</span>');
 				}
 			}
 			else {
-				$('#update-plots-button').prop('disabled', true);
+				$('#update-plots-button').prop('disabled', false);
 				$('#parameter-checkbox-div').append('<span class="text-danger">Unable to contact plot web service: ' + resp.status + ' : ' + resp.statusText);
 			}
 			$('#page-loading-div').hide();
@@ -129,11 +129,11 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 			srIDs = siteSrIDs;
 		}
 	});
-	
+
 	// Initialize dygraphs
 	var tsPlots = new SB.TSPlots('sandbar-plots', siteId);
 	var sitePlots = new SB.SitePlots('gcmrc-plots', gdawsSiteId, dischargeSite);
-	
+
 
 	$('#sep-reatt').click(function(event) {
 		var checkboxIdArr = [];
@@ -152,7 +152,7 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 				var checkboxID = checkboxIdArr[i];
 				enableChanTotalSite(checkboxID);
 			}
-		}	
+		}
 	});
 
 	$('#ds-min').change(function(event) {
@@ -210,7 +210,7 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 					var parentSibling = $(selectParentStr).siblings('input[name="sb-param"]')
 					var parentSiblingCheckboxVal = parentSibling.val();
 					var parentSiblingLabelText = $(selectParentStr).siblings('label').text()
-					
+
 					if (parentSiblingCheckboxVal === 'area2d') {
 						var paramUnit = 'm' + '2'.sup();
 						var displayName = 'Area';
@@ -226,12 +226,12 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 					for (var i = 0; i < subParam.length; i++) {
 						var paramValStr = subParam[i].paramVal;
 						if (paramValStr === parentSiblingCheckboxVal) {
-							subParam[i].subParamVals.push($(this).val()); 
+							subParam[i].subParamVals.push($(this).val());
 							parentFound = true;
 						}
 					}
 					if (parentFound === false) {
-						var mapping = {paramVal: parentSiblingCheckboxVal, 
+						var mapping = {paramVal: parentSiblingCheckboxVal,
 									   displayName: displayName,
 									   paramUnit: paramUnit,
 									   subParamVals: [$(this).val()]}
@@ -246,21 +246,21 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 			if (params.length === 0) {
 				if (errorExists === 0) {
 					$('#parameter-errors').html('');
-				} 
+				}
 				else {
 					$('#parameter-errors').append('<br>');
 				}
 				errorExists = 1;
 				$('#parameter-errors').append('Please select one or more parameters to plot.');
 			}
-			
+
 			var sandbarParamsLength = sandbarParams.length;
 			var sandbarSubParamsLength = subParam.length;
 			if (sandbarParamsLength >= 1 && sandbarSubParamsLength === 0) {
 				errorExists = 1;
 				$('#parameter-errors').append('A subparameter must be selected for Area plots.');
 			}
-			
+
 			if ($('#sep-reatt').is(':checked')) {
 				if ($('#ds-min').val() != '' && Number($('#ds-min').val()) < 8000) {
 					if (errorExists === 0) {
@@ -273,7 +273,7 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 					$('#parameter-errors').append('Minimum Discharge must be greater than or equal to 8000 cfs to plot separation/reattachment bars separately.');
 				}
 			}
-			
+
 			if (Number($('#ds-min').val()) > Number($('#ds-max').val())) {
 				if (errorExists === 0) {
 					$('#parameter-errors').html('');
@@ -333,7 +333,7 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 				$('#panel-title').html('Sandbar Metrics Between Stage Elevations Associated with Discharges of ' + $('#ds-min').val() + ' and ' + $('#ds-max').val() + ' cfs (ft<sup>3</sup>/s)');
 				sitePlots.updatePlots(plotStartDate, plotEndDate, gcmrcParams, tsPlots._graphs, params, sandbarStartDate);
 				tsPlots.updatePlots($('#ds-min').val(), $('#ds-max').val(), subParam, sitePlots._graphs, params, srParam);
-				
+
 				var blockRedraw = false;
 				$(document).ajaxStop(function() {
 					var combinedGraphs = collect(sitePlots._graphs, tsPlots._graphs);
@@ -352,7 +352,7 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 								blockRedraw = false;
 							}
 						});
-					}					
+					}
 				});
 			}
 			else if (errorExists === 0 && clickTrigger === "download-data") {
@@ -373,6 +373,6 @@ SB.SitePageOnReady = function(gdawsSiteId, dischargeSite, siteId) {
 		errorPlacement: function(error, element) {
 			error.appendTo(element.parent());
 		},
-		
+
 	});
 };

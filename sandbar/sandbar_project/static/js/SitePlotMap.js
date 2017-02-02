@@ -1,6 +1,6 @@
 SB.SitePlotMap = function(siteLat,siteLng) {
-
-	var map = L.map('site-loc-map-div', {
+	var map
+	map = L.map('site-loc-map-div', {
 		center: latlng,
 		zoom: 18,
 		attributionControl: false

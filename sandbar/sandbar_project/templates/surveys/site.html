@@ -53,7 +53,7 @@
 			var dischargeSite = "{{ site.secondary_gdaws_site_id }}";
 			var sedimentSite = "{{ site.gdaws_site_id }}";
 			SB.SitePageOnReady(sedimentSite, dischargeSite, "{{ site.id }}");
-			map = SB.SitePlotMap("{{ site.geom.x }}","{{ site.geom.y }}");
+			map = SB.SitePlotMap("{{ site.longitude }}","{{ site.latitude }}");
 		});	  
 	</script>
 	

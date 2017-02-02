@@ -2,7 +2,7 @@ from geojson import Point, Feature, FeatureCollection
 
 def create_geojson_point(latitude_value, longitude_value):
     
-    point_tuple = (latitude_value, longitude_value)
+    point_tuple = (longitude_value, latitude_value)
     
     return point_tuple
 

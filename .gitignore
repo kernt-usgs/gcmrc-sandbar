@@ -3,3 +3,4 @@ static/
 .mysql
 env
 *.log
+*.pyc
