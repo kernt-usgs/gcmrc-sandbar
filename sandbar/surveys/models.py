@@ -44,7 +44,7 @@ class Site(models.Model):
     longitude = models.DecimalField(max_digits= 16, decimal_places=13, null=True)
     
     class Meta:
-        db_table = 'vwsite'
+        db_table = 'vw_site'
         unique_together = ('river_mile', 'site_name')
         
     objects = models.GeoManager()
@@ -90,7 +90,7 @@ class Survey(models.Model):
     sandbar_id = models.IntegerField(null=True)
     
     class Meta:
-        db_table = 'vwsurvey'
+        db_table = 'vw_survey'
         
     def __unicode__(self):
         return str(self.site) + '-' + str(self.sandbar_id) + ' on ' + str(self.survey_date) + ' for ' + str(self.calc_type) + ' at ' + str(self.discharge)
@@ -102,7 +102,7 @@ class Sandbar(models.Model):
     sandbar_name = models.CharField(max_length=20)
     
     class Meta:
-        db_table = 'vwsandbar'
+        db_table = 'vw_sandbar'
         unique_together = ('site', 'sandbar_name')
     
     def __unicode__(self):
@@ -140,7 +140,7 @@ class AreaVolume(models.Model):
     next_plane_height = models.DecimalField(max_digits=20, decimal_places=9, null=True)
     
     class Meta:
-        db_table = 'vwareavolume'
+        db_table = 'vw_areavolume'
         unique_together = ('site', 'sandbar', 'calc_date', 'calc_type', 'plane_height','prev_plane_height','next_plane_height')
         
     def __unicode__(self):

@@ -85,4 +85,13 @@ You'll need to open a terminal now and:
 
 ```
 
+
+
+## Ways of running DEV
+
+
+1. Through pyCharm and virtualenv (no docker)
+2. Docker locally
+3. Docker compose
+
  

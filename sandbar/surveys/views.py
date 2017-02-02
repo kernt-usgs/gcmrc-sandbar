@@ -72,32 +72,76 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
                 col_names += ('dy_chan_int_vol',)
             if 'eddy_chan_sum' in calculation_types:
                 col_names += ('dy_ts_int_vol',)
-               
-        acdb = AlchemDB()
-        ora = acdb.create_session()
-        sql_base = 'SELECT * FROM TABLE(SB_CALCS.F_GET_AREA_VOL_TF({site_id}, {ds_min}, {ds_max})) ORDER BY calc_date'
-        sql_statement = sql_base.format(site_id=site.id, ds_min=ds_min, ds_max=ds_max)
-        query_base = ora.query(*col_names)
-        result_set = query_base.from_statement(sql_statement).all()
-        result_len = len(result_set)
+
+
+        def getMaxMinStage():
+
+            acdb = AlchemDB()
+            ora = acdb.create_session()
+
+            sql_base = 'SELECT * FROM SandbarSites WHERE (SiteID ={site_id})'
+            sql_statement = sql_base.format(site_id=site.id)
+
+            query_base = ora.query('StageDischargeA', 'StageDischargeB', 'StageDischargeC')
+            result = query_base.from_statement(sql_statement).all()[0]
+
+            minstage = result.StageDischargeA + (result.StageDischargeB * ds_min) + (result.StageDischargeC * (ds_min ** 2))
+            maxstage = result.StageDischargeA + (result.StageDischargeB * ds_max) + (result.StageDischargeC * (ds_max ** 2))
+
+            return minstage, maxstage
+
+        def getIncrementalResults(minstage, maxstage):
+
+            acdb = AlchemDB()
+            ora = acdb.create_session()
+
+            sql_base = 'SELECT * FROM vw_incrementalresults WHERE (SiteID ={site_id}) AND (Elevation > {min_stage}) AND (Elevation < {max_stage})'
+            sql_statement = sql_base.format(site_id=site.id, min_stage=minstage, max_stage=maxstage)
+            query_base = ora.query('SurveyDate', 'Area', 'Volume')
+            result_set = query_base.from_statement(sql_statement).all()
+
+            results = {}
+            for result in result_set:
+                if not result.SurveyDate in results:
+                    results[result.SurveyDate] = {
+                        'Volume': result.Volume,
+                        'Area': result.Area,
+                    }
+                else:
+                    results[result.SurveyDate]['Volume'] += result.Volume
+                    results[result.SurveyDate]['Area'] += result.Area
+            return results
+
+        minstage, maxstage = getMaxMinStage()
+        areavols = getIncrementalResults(minstage, maxstage)
+        areavolList = []
+        AreaVols = namedtuple("AreaVols", ["date", "eddy"])
+        for date, areavol in areavols.iteritems():
+            if parameter_type == 'volume':
+                areavolList.append(AreaVols(date=date, eddy=areavol['Volume']))
+            else:
+                areavolList.append(AreaVols(date=date, eddy=areavol['Area']))
+
+        result_len = len(areavols)
         
         plot_parameters = ()
         if result_len != 0:
             plot_parameters = ('date',)
+            # NOTE: We comment THIS OUT. BRING IT BACK EVENTUALLY
             # get the pertinent columns from the dataframe
-            if plot_sep:
-                plot_parameters += (sandbar_disp_name,)
-            else:
-                if 'eddy' in calculation_types:
-                    plot_parameters += (eddy_total,)
-                if 'chan' in calculation_types:
-                    plot_parameters += (channel_total,)
-                if 'eddy_chan_sum' in calculation_types:
-                    plot_parameters += (total_site,)
+            # if plot_sep:
+            #     plot_parameters += (sandbar_disp_name,)
+            # else:
+            if 'eddy' in calculation_types:
+                plot_parameters += (eddy_total,)
+            if 'chan' in calculation_types:
+                plot_parameters += (channel_total,)
+            if 'eddy_chan_sum' in calculation_types:
+                plot_parameters += (total_site,)
                         
-        df_rs = create_pandas_dataframe(result_set, columns=(plot_parameters))
+        df_rs = create_pandas_dataframe(areavolList, columns=(plot_parameters))
         df_pert_records = df_rs.to_dict('records')
-        
+
         return self.render_to_csv_response(df_pert_records, plot_parameters)
 
 

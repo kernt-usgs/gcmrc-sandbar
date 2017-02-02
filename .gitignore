@@ -1,4 +1,5 @@
 .idea
+static/
 .mysql
 env
 *.log

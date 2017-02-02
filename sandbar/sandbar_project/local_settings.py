@@ -45,4 +45,4 @@ STATIC_URL = '/static/'
 # GDAWS_SERVICE_URL = 'http://cida-eros-gcmrcdev.er.usgs.gov:8080/gcmrc-services/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'wibbly-wobbly-timey-wimey'
+SECRET_KEY = os.getenv('SECRET')
