@@ -5,7 +5,8 @@ from django.conf import settings
 from django.db.models import Min, Max
 from django.views.generic import ListView, DetailView, View
 from numpy import interp
-
+from itertools import groupby
+from operator import itemgetter
 from common.views import SimpleWebServiceProxyView
 from common.utils.geojson_utils import create_geojson_point, create_geojson_feature, create_geojson_feature_collection
 from .models import Site, AreaVolume, AreaVolumeOutput, Sandbar
@@ -90,29 +91,32 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
 
             return minstage, maxstage
 
+
+        minstage, maxstage = getMaxMinStage()
+
         def getIncrementalResults(minstage, maxstage):
 
             acdb = AlchemDB()
             ora = acdb.create_session()
 
-            sql_base = 'SELECT * FROM vw_incrementalresults WHERE (SiteID ={site_id}) AND (Elevation > {min_stage}) AND (Elevation < {max_stage})'
-            sql_statement = sql_base.format(site_id=site.id, min_stage=minstage, max_stage=maxstage)
-            query_base = ora.query('SurveyDate', 'Area', 'Volume')
+            sql_base = "SELECT SurveyID, SurveyDate, Elevation, Area, Volume FROM vw_incrementalresults WHERE SiteID ={site_id} ORDER BY SurveyDate, Elevation"
+            sql_statement = sql_base.format(site_id=site.id)
+            query_base = ora.query('SurveyID', 'SurveyDate', 'Elevation', 'Area', 'Volume')
             result_set = query_base.from_statement(sql_statement).all()
 
             results = {}
-            for result in result_set:
-                if not result.SurveyDate in results:
-                    results[result.SurveyDate] = {
-                        'Volume': result.Volume,
-                        'Area': result.Area,
-                    }
-                else:
-                    results[result.SurveyDate]['Volume'] += result.Volume
-                    results[result.SurveyDate]['Area'] += result.Area
+            for sid, r in groupby(result_set, key=itemgetter(0)):
+                result = [res for res in r if res.Elevation < maxstage and res.Elevation > minstage]
+                volume = result[0].Volume - result[-1].Volume
+                area = result[0].Area - result[-1].Area
+
+                results[result[0].SurveyDate] = {
+                    'Volume': volume,
+                    'Area': area,
+                }
             return results
 
-        minstage, maxstage = getMaxMinStage()
+
         areavols = getIncrementalResults(minstage, maxstage)
         areavolList = []
         AreaVols = namedtuple("AreaVols", ["date", "eddy"])
