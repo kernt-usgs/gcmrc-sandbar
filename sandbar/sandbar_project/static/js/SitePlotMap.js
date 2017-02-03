@@ -13,9 +13,9 @@ SB.SitePlotMap = function(siteLat,siteLng) {
 	if (siteLat != "" && siteLng != "") {
 		var latlng = L.latLng(parseFloat(siteLng), parseFloat(siteLat));
 		var marker = L.marker(latlng).addTo(map);
-		map.setView(latlng, 7);
+		map.setView(latlng, 18);
 	}
 
 	//var baseLayer = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{xda}.png').addTo(map);
 	return map;
-};
+}; 

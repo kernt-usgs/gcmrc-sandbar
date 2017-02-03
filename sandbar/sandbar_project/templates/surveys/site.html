@@ -15,6 +15,7 @@
 	<script type="text/javascript">
 		var SB = {};
 		SB.GDAWS_SERVICE = '{% url "surveys-gdaws" op="" %}';
+		// There's an extra slash on the end we need to remove
 		SB.GDAWS_SERVICE = SB.GDAWS_SERVICE.slice(0, SB.GDAWS_SERVICE.length - 1);
 		SB.AREA_2D_URL = '{% url "surveys-areavolume" %}';
 		SB.DATA_DOWNLOAD = '{% url "data_download" %}';
