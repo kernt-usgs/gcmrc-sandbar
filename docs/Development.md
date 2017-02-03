@@ -1,97 +1,100 @@
-These instructions are mine (Matt Reimer) as I discover how Django works and how to develop locally on it.
+These instructions are mine (Matt Reimer) as I discover how Django works and how to develop locally on it. I'm on OSX so feel free to rewrite this as it applies to you.
 
-## To get running locally:
+## Ways of running Django on your local machine
 
-I'm using pycharm for debugging. 
+1. Through pyCharm and virtualenv (no docker)
+2. Running the full stack of Mysql+Django with Docker compose
+3. Running just DJango on its own and connecting it to a database somewhere else.
 
-## Mysql
+## Running Django Server with Pycharm setup:
 
-I use a docker container so:
+This stuff is only for the first run. After you do this you should just be able to hit "play" and have a django server. You'd want this option if you're trying to debug python scripts inside the actual app.
 
-```
-docker-compose up
-```
-
-that will give you a mysql server
-
-### Pycharm setup:
+#### Step1: Turn on Django Support in Pycharm
 
 First enable Django support from `Language & Frameworks -> Django`
 
 ```
-PRoject root: <whatever>/sandbar
+Project root: <whatever>/sandbar
 settings: sandbar_project/settings.pyc
 manage script: manage.py
 ```
 
-Now you need to reate a `local_settings.py` file:
+#### Step 2: Setting up a VirtualEnv
 
-```Python
-'''
-Created on Aug 29, 2013
+Now you need a new project interpreter. `Project: gcmrc-sandbar -> Project Interpreter` click the gear and set up a new virtualenv with a name like `gcmrcenv`. Note the name and the location.
 
-@author: kmschoep
-'''
-from sys import argv
-import os
-PROJECT_HOME = os.path.dirname(__file__)
-SITE_HOME = os.path.split(PROJECT_HOME)[0]
-DEBUG = True
-#TEMPLATE_DEBUG = DEBUG
-#SOUTH_LOGGING_FILE = os.path.join(os.path.dirname(__file__),"south.log")
-#SOUTH_LOGGING_ON = True
+You'll need to open a terminal now and if you see your virtualenv name in the prompt (`gcmrcenv` in this case) you're good to go. Otherwise you need to source the virtualenv:
 
-SCHEMA_USER = 'root'
-DB_PWD = 'root'
-DB_NAME = 'djangoDB'
-
-DJANGOTEST_PWD = 'root'
-
-# This checks to see if django tests are running (i.e. manage.py test)
-if argv and 1 < len(argv):
-    RUNNING_TESTS = 'test' in argv
-else:
-    RUNNING_TESTS= False
-
-if not RUNNING_TESTS:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.contrib.gis.db.backends.mysql',
-            'NAME': DB_NAME,
-            'USER': SCHEMA_USER,
-            'PASSWORD': DB_PWD,
-            'HOST': '127.0.0.1',
-            'PORT': '13306',
-        }
-    }
-
-POSTGIS_VERSION = (2, 1, 1)
-
-STATIC_URL = '/static/'
-
-GDAWS_SERVICE_URL = 'http://cida-eros-gcmrcdev.er.usgs.gov:8080/gcmrc-services/'
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'wibbly-wobbly-timey-wimey'
+```Bash
+' My Pycharm prompt looks like this:
+$ _
+' so I type...
+source /location/of/your/gcmrcenv/bin/activate
+' Now you should see...
+(gcmrcenv)$ _
+' and everything I execute after this is inside the virtualenv
 ```
 
-### VirtualEnv
+Now you just need to install the dependencies listed in the `requirements.txt` file (adjust paths as necessary):
 
-Now you need a new project interpreter. `Project: gcmrc-sandbar -> Project Interpreter` click the gear and set up a new virtualenv.
+```bash
+pip --timeout=120 install -r sandbar/requirements.txt
+' I found that I had to upgrade numpy, scipy and pandas too
+pip install --upgrade numpy scipy pandas
+```
 
-You'll need to open a terminal now and:
+#### Step 3: Add a Django Configuration
+
+* Edit your configurations (button in the top right)
+* hit the (+) to add a new Django server with the following properties:
+  * **Host**: localhost **Port**: 8080
+  * **Environment variables *(set them as follows with appropriate substitutions)*:**
+
+```
+DJANGO_SETTINGS_MODULE=sandbar_project.settings
+PYTHONUNBUFFERED=1
+SCHEMA_USER=[YOUR_DB_USERNAME]
+DB_PORT=3306
+DB_NAME=[YOUR_DB_NAME]
+DB_PWD=[YOUR_DB_PASSWORD]
+DB_HOST=[YOUR_DB_HOSTNAME]
+SECRET=anyrandomstringyouwant
+```
+
+Done! Now you should be able to debug and run DJango on your machine.
+
+## Running with Docker Compose
+
+Docker compose is a great way to simulate the entire production stack exactly as it is deployed on the server including a network link between containers. This takes most of the guess-work out of debugging on the server.
+
+You can use a local mysql server if you want or you can connect to the live `SandbarData` or the test `SandbarTest` db on **AWS RDS** but if you want to run something locally I've provided a docker container loaded with a MySQL server. 
+
+```Bash
+docker-compose up
+```
+
+that will give you two containers:
+
+- **Container 1**: mysql server
+- **Container 2**: Django python container
+
+If you just want the database you can run:
+
+```bash
+docker-compose up db
+```
+
+this is useful when you want to debug in pycharm against a local database but can't be bothered to run MySQL on your local machine (which you shouldn't do anyway probably).
+
+### Option 3: Docker Locally
+
+I don't know why you wouldn't use docker-compose but for completeness I'll tell you how to get this up and running with individual docker containers:
+
+```Bash
+docker build -t gcmrc-sandbar .
+docker run -e "SCHEMA_USER=YOUR_DB_USERNAME" -e "DB_PORT=YOUR_DB_PORT" -e "DB_NAME=YOUR_DB_NAME" -e "DB_PWD=YOUR_DB_PASSWORD" -e "DB_HOST=YOUR_DB_HOST" -p 8080:8000 sandbarprod -it
 
 ```
 
-```
-
-
-
-## Ways of running DEV
-
-
-1. Through pyCharm and virtualenv (no docker)
-2. Docker locally
-3. Docker compose
-
- 
+This is basically just doing everything that's in your `docker-compsoe.yml` file.
