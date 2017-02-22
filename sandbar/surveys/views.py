@@ -339,6 +339,7 @@ class SiteDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
+        context['photourl'] = settings.PHOTO_URL
         return context
 
 

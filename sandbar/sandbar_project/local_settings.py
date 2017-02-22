@@ -18,6 +18,9 @@ DB_NAME = os.getenv('DB_NAME')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
+# Make sure there's no End slash!
+PHOTO_URL = os.getenv('PHOTO_URL')
+
 DJANGOTEST_PWD = 'root'
 
 # This checks to see if django tests are running (i.e. manage.py test)

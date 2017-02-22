@@ -1,6 +1,7 @@
 import logging
 import mimetypes
 from urllib2 import urlopen, HTTPError
+from django.conf import settings
 
 from django.http import HttpResponse
 from django.views.generic import View, TemplateView
@@ -38,6 +39,6 @@ class SandbarHome(TemplateView):
     
     def get(self, request, *args, **kwargs):
         
-        context = None
+        context = {'photourl': settings.PHOTO_URL}
         
         return self.render_to_response(context) 
