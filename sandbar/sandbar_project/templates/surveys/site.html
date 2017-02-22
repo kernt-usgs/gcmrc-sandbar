@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Sandbar - {{ site.site_name }}{% endblock %}
+
+{% block page_description %}Provides data and plotting tools for sandbar {{ site.site_name }} located at river mile {{ site.river_mile }}{% endblock %}
+
+{% block page_style %}
+	<link rel="stylesheet" type="text/css" href="{% static 'lib/leaflet-0.6.4/leaflet.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'css/sandbar_custom.css' %}" />
+{% endblock %}
+
+{% block page_script %}
+	<script type="text/javascript">
+		var SB = {};
+		SB.GDAWS_SERVICE = '{% url "surveys-gdaws" op="" %}';
+		SB.GDAWS_SERVICE = SB.GDAWS_SERVICE.slice(0, SB.GDAWS_SERVICE.length - 1);
+		SB.AREA_2D_URL = '{% url "surveys-areavolume" %}';
+		SB.DATA_DOWNLOAD = '{% url "data_download" %}';
+		SB.SITE_AREA_CALC_URL = '{% url "basic_area_info" %}';
+	</script>
+	
+	<script type="text/javascript">
+		var PAGE_URL = window.location.pathname;
+	</script>
+	<script type="text/javascript" src="{% static 'lib/modernizr.custom.45705.js' %}"></script>
+	<script type="text/javascript" src="{% static 'lib/webshims-stable/js-webshim/minified/polyfiller.js' %}"></script>
+	<script type="text/javascript" src="{% static 'lib/dygraph-combined.js' %}"></script>
+	<script type="text/javascript" src="{% static 'lib/jquery-validation-1.11.1/dist/jquery.validate.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'lib/mustache.js-master/mustache.js' %}"></script>
+	<script type="text/javascript" src="{% static 'lib/leaflet-0.6.4/leaflet.js' %}"></script>
+	<script type="text/javascript" src="{% static 'lib/esri-leaflet-v1.0.0-rc.5/esri-leaflet.js' %}"></script>
+	<script type="text/javascript" src="{% static 'lib/leaflet.ajax.js' %}"></script>
+	
+	<script type="text/javascript" src="{% static 'js/utils.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/Config.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/DateRange.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/GDAWSFormatUtils.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/CreateDynamicLink.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/DotPlotter.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/SitePlots.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/TSPlots.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/SiteParams.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/SitePageOnReady.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/SitePlotMap.js' %}"></script>
+	
+	
+	<script type="text/javascript">
+		$.webshims.polyfill();				
+		$(document).ready(function() {
+			var map;
+			var dischargeSite = "{{ site.secondary_gdaws_site_id }}";
+			var sedimentSite = "{{ site.gdaws_site_id }}";
+			SB.SitePageOnReady(sedimentSite, dischargeSite, "{{ site.id }}");
+			map = SB.SitePlotMap("{{ site.geom.x }}","{{ site.geom.y }}");
+		});	  
+	</script>
+	
+	<!-- HTML Templates -->
+	{% verbatim %}
+	<script id="param_template" type="text/html">
+		<div class="parameter-group">
+			<input id="{{paramName}}-checkbox" type="checkbox" value="{{paramName}}" />
+			<label for="{{paramName}}-checkbox" title="{{description.units}}">{{description.displayName}} for {{description.siteName}}</label>
+			<br />
+			<span class="parameter-dates">{{description.beginPosition}} to {{description.endPosition}}</span>
+		</div>
+	</script>
+	<script id="app_param_template" type="text/html">
+		{{#wrapperParam}}
+		<div id="{{areaParamVal}}-group" class="parameter-group">
+            <input id="{{areaParamVal}}-checkbox" type="checkbox" name="sb-param" value="{{areaParamVal}}" />
+			<label for="{{areaParamVal}}-checkbox" title="{{areaParamVal}}">{{areaParam}}</label>
+			<br />
+			<span class="parameter-dates">{{minDate}} to {{maxDate}}</span>
+			<br />
+			{{#wrapperSubParam}}
+			<div id="{{areaParamVal}}-subgroup" class="sub-param-group">
+				<input id="{{areaParamVal}}-{{subParamValue}}-checkbox" type="checkbox" name="sb-subparam" value="{{subParamValue}}" />
+				<label for="{{areaParamVal}}-{{subParamValue}}-checkbox" title="{{subParamTitle}}">{{subParamLabel}}</label>			
+			</div>
+			{{/wrapperSubParam}}
+		</div>
+		{{/wrapperParam}}
+	</script>
+	
+	{% endverbatim %}
+{% endblock %}
+
+{% block page_content %}
+	<div id="breadcrumbs">
+		<span>
+			<span><a href="{% url 'home' %}">Home</a></span>
+			<span> &gt; </span>
+			<span><a href="{% url 'surveys-site_list' %}">Sandbar Monitoring Sites</a></span>
+		<span> &gt; </span>
+		<span>{{ site.site_name }}</span>
+		</span>
+	</div>
+	<h2>{{ site.site_name }} - {{ site.river_mile }} {{ site.river_side }}</h2>
+	<div id="page-loading-div" class="loading-div">
+		<span>Loading...</span><br /><img src="{{ STATIC_URL }}images/ajax-loader.gif" alt=""/>
+	</div>
+	<div id="site-page-content" style="display: none;">
+		<div class="col-md-4">
+			<div id="parameter-selection-div" class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">Parameters</h4>
+				</div>
+				<form>
+				<div class="panel-body">
+					<h4 class="param-label">Sandbar Elevation Zone for Plotting:</h4>
+					<p class="parameter-dates"><a title="Link to explanatory document about how the sandbar elevation zones are calculated.  Opens in a new window" href="{% url 'area_vol_calc' %}" target="_blank">What is the sandbar elevation zone?</a></p>
+					{% if site.deposit_type == 'SR' %}
+					<div class="parameter-group">
+						<label for="sep-reatt"><input type="checkbox" id="sep-reatt" value="sr" />&nbsp;Plot separation/reattachment bars separately</label>
+					</div>
+					{% endif %}				
+					<div class="parameter-group">
+						<label for="ds-min" title="Defines lower bound of zone of interest for sandbar area and volume calculations. Plot will show sandbar Area/Volume between the elevation defined by this discharge and the upper bound. Because the stage-discharge relationship between 0 and 5,000 cfs is invalid, enter value between 5,000 and the upper bound, or 0 to to show entire area/volume below 5000 cfs.">Discharge for Lower Bound of Sandbar Elevation Zone (ft<sup>3</sup>/s):&nbsp;</label>
+						<input type="text" id="ds-min"/>
+					</div>
+					<div class="parameter-group">
+						<label for="ds-max" title="Defines upper bound of zone of interest for sandbar area and volume calculations. Plot will show sandbar Area/Volume between the lower bound and the elevation defined by this discharge. Enter value between lower bound and 60,000.">Discharge for Upper Bound of Sandbar Elevation Zone (ft<sup>3</sup>/s):&nbsp;</label>
+						<input type="text" id="ds-max"/>
+					</div>
+					<div id="no-data-warning" class="alert alert-danger" style="display: none;"></div>
+					<div id="sb-parameter-checkbox-div"></div>
+					
+					<h4 class="param-label">Streamflow and Sediment Data:</h4>
+					<div id="parameter-checkbox-div"></div>
+					<button id="update-plots-button" type="button" class="btn btn-primary btn-block">Update Plots</button>
+					<a id="download-data" class="btn btn-primary btn-block">Download Sandbar Data</a>
+					<div id="parameter-errors" class="alert alert-danger" style="display: none;"></div>
+				</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="graphs-panel-div" class="panel panel-default">
+				<div class="panel-heading">
+					<h4 id="panel-title"></h4>
+				</div>
+				<div id="graphs-div" class="panel-body">
+					<div id="sandbar-plots">
+						<div id="plots-loading-div" class="loading-div well" style="display: none;"><span>Loading Sandbar Plots...</span><br /><img src="{{ STATIC_URL }}images/ajax-loader.gif" alt=""/></div>
+						<div id="area2d-graph-div" class="graph-div"></div>
+						<div id="volume-graph-div" class="graph-div"></div>
+						<div id="area2d-sr-sep-graph-div" class="graph-div"></div>
+						<div id="area2d-sr-reatt-graph-div" class="graph-div"></div>
+						<div id="volume-sr-sep-graph-div" class="graph-div"></div>
+						<div id="volume-sr-reatt-graph-div" class="graph-div"></div>
+					</div>
+					<div id="gcmrc-plots">
+						<div id="graphs-loading-div" class="loading-div well" style="display: none;"><span>Loading Streamflow and Sediment Plots...<br /><span style="font-size:0.7em;font-style:italic;">Due to the length of your request, Discharge data may take up to several minutes to load.</span></span><br /><img src="{{ STATIC_URL }}images/ajax-loader.gif" alt=""/></div>
+						<div id="cumulSandLoad-graph-div" class="graph-div"></div>
+						<div id="discharge-graph-div" class="graph-div"></div>
+					</div>
+				</div>
+			</div>		
+		</div>
+		<div class="col-md-3">
+			<div id="site-photo-div" class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">Site Photo</h4>
+				</div>
+				<div id="site-photo">
+				{% if site.image_name_small != "" %}
+				<a title="View full size image" href="{% static 'sandbar_photos/'%}{{ site.image_name }}" target="_blank"><img class="photo" src="{% static 'sandbar_photos/'%}{{ site.image_name_med }}" alt="Image for {{ site.site_name }}" /></a>
+				{% else %}
+				<p>Image for {{ site.site_name }}</p>
+				{% endif %}
+				</div>
+			</div>
+			<div id="caption">
+				{% if site.image_name_small != "" %}
+					<p class="caption">Photograph of {{ site.site_name }} taken {{ site.p_month }} {{ site.p_day }}, {{ site.p_year }}. View is from {{ site.photo_from }} side of river looking {{ site.photo_view }} at site. Streamflow is from {{ site.flow_direction }} of image.
+
+				{% endif %}
+			</div>
+			<div id="site-info-div" class="panel panel-default  full">
+				<div class="panel-heading">
+					<h4 class="panel-title">Site Map</h4>
+				</div>
+				<div id="site-loc-map-div" class="full">	
+				</div>
+			</div>
+		</div>
+	</div>
+	<div>
+	</div>
+	
+{% endblock %}

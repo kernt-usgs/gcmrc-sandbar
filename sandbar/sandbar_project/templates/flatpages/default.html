@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load load_static %}
+
+{% block title %}{{ flatpage.title }}{% endblock %}
+
+{% block section_name %}
+    {{ flatpage.title }}
+{% endblock  %}
+
+{% block page_content %}
+    {{ flatpage.content|load_static}}
+{% endblock %}
