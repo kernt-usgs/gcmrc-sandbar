@@ -44,7 +44,7 @@ pip --timeout=120 install -r sandbar/requirements.txt
 pip install --upgrade numpy scipy pandas
 ```
 
-#### Step 3: Add a Django Configuration
+#### Step 3: Add a Django Configuration with environment variables
 
 * Edit your configurations (button in the top right)
 * hit the (+) to add a new Django server with the following properties:
@@ -60,6 +60,7 @@ DB_NAME=[YOUR_DB_NAME]
 DB_PWD=[YOUR_DB_PASSWORD]
 DB_HOST=[YOUR_DB_HOSTNAME]
 SECRET=anyrandomstringyouwant
+PHOTO_URL=http://whatever.photo.url/my/folder
 ```
 
 Done! Now you should be able to debug and run DJango on your machine.
@@ -86,6 +87,10 @@ docker-compose up db
 ```
 
 this is useful when you want to debug in pycharm against a local database but can't be bothered to run MySQL on your local machine (which you shouldn't do anyway probably).
+
+***NB: The first time you run this the web worker will fail because it can't find a database. This is because the MySQL container boots up with an empty server. You need to start it up, let the web worker fail then connect on port 13306 using a MySQL client and then import a copy of `SandbarData` DB into the Mysql server (just the first time. It persists)***
+
+
 
 ### Option 3: Docker Locally
 

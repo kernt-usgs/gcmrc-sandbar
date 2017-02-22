@@ -38,15 +38,3 @@ EXPOSE 8000
 COPY . /usr/src/app/
 WORKDIR /usr/src/app/sandbar
 ENTRYPOINT ["/usr/src/app/docker-entrypoint.sh"]
-
-
-# Prepare log files and start outputting logs to stdout
-
-# docker run -e "SCHEMA_USER=root" -e "DB_PORT=13306" -e "DB_NAME=SandbarData" -e "DB_PWD=root" -e "DB_HOST=192.168.0.108" -p 8080:8000 -it sandbarprod  /bin/bash
-# docker run -e "SCHEMA_USER=root" -e "DB_PORT=13306" -e "DB_NAME=SandbarData" -e "DB_PWD=root" -e "DB_HOST=192.168.0.108" -p 8080:8000 sandbarprod -it
-
-# DEbugging live
-#docker run --rm -it \
-#--entrypoint=/bin/bash -c "python manage.py runserver 0.0.0.0:8000" \
-#--publish=8001:8000 \
-#michal/hello_django:latest
