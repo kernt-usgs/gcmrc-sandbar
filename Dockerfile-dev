@@ -21,9 +21,6 @@ RUN pip install virtualenv
 RUN virtualenv --no-site-packages /usr/src/env
 RUN /usr/src/env/bin/pip --timeout=120 install -r /tmp/requirements.txt
 
-# For some reason numpy gets the wrong version so
-RUN /usr/src/env/bin/pip install --upgrade numpy scipy pandas
-
 COPY ./awscli.conf /etc/awslogs/awscli.conf
 COPY ./awslogs.conf /etc/awslogs/awslogs.conf
 
