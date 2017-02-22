@@ -99,49 +99,74 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
             acdb = AlchemDB()
             ora = acdb.create_session()
 
-            sql_base = "SELECT SurveyID, SurveyDate, Elevation, Area, Volume FROM vw_incrementalresults WHERE SiteID ={site_id} ORDER BY SurveyDate, Elevation"
+            sql_base = "SELECT SurveyID, SurveyDate, Elevation, SectionTypeID, Area, Volume FROM vw_incrementalresults WHERE SiteID ={site_id} ORDER BY SurveyDate, Elevation"
             sql_statement = sql_base.format(site_id=site.id)
-            query_base = ora.query('SurveyID', 'SurveyDate', 'Elevation', 'Area', 'Volume')
+            query_base = ora.query('SurveyID', 'SurveyDate', 'Elevation', 'Area', 'Volume', 'SectionTypeID')
             result_set = query_base.from_statement(sql_statement).all()
 
-            results = {}
-            for sid, r in groupby(result_set, key=itemgetter(0)):
-                result = [res for res in r if res.Elevation < maxstage and res.Elevation > minstage]
-                volume = result[0].Volume - result[-1].Volume
-                area = result[0].Area - result[-1].Area
+            dResult = {}
+            sectionTypes = {9: "chan", 10: "eddy", 13: "Eddy Separation", 14: "Eddy Reattachment"}
+            for dataTuple in result_set:
 
-                results[result[0].SurveyDate] = {
-                    'Volume': volume,
-                    'Area': area,
-                }
-            return results
+                surveyDate = dataTuple.SurveyDate
+
+                if not surveyDate in dResult.keys():
+                    dResult[surveyDate] = {}
+
+                sectionType = sectionTypes[dataTuple.SectionTypeID]
+                if not sectionType in dResult[surveyDate]:
+                    dResult[surveyDate][sectionType] = {}
+                    dResult[surveyDate][sectionType]["Area"] = dataTuple.Area
+                    dResult[surveyDate][sectionType]["Volume"] = dataTuple.Volume
+
+            # Loop over the data again and accumulate the totals for each survey
+            for surveyDate, survey in dResult.iteritems():
+                fTotalArea = 0.0
+                fTotalVol = 0.0
+                for sectionName, dValues in survey.iteritems():
+                    fTotalArea += dValues["Area"]
+                    fTotalVol += dValues["Volume"]
+
+                survey["eddy_chan_sum"] = {}
+                survey["eddy_chan_sum"]["Area"] = fTotalArea
+                survey["eddy_chan_sum"]["Volume"] = fTotalVol
+
+            return dResult
 
 
         areavols = getIncrementalResults(minstage, maxstage)
-        areavolList = []
-        AreaVols = namedtuple("AreaVols", ["date", "eddy"])
-        for date, areavol in areavols.iteritems():
-            if parameter_type == 'volume':
-                areavolList.append(AreaVols(date=date, eddy=areavol['Volume']))
-            else:
-                areavolList.append(AreaVols(date=date, eddy=areavol['Area']))
-
         result_len = len(areavols)
-        
+
         plot_parameters = ()
         if result_len != 0:
             plot_parameters = ('date',)
             # NOTE: We comment THIS OUT. BRING IT BACK EVENTUALLY
             # get the pertinent columns from the dataframe
-            # if plot_sep:
-            #     plot_parameters += (sandbar_disp_name,)
-            # else:
-            if 'eddy' in calculation_types:
-                plot_parameters += (eddy_total,)
-            if 'chan' in calculation_types:
-                plot_parameters += (channel_total,)
-            if 'eddy_chan_sum' in calculation_types:
-                plot_parameters += (total_site,)
+            if plot_sep:
+                plot_parameters += (sandbar_disp_name,)
+            else:
+                if 'eddy' in calculation_types:
+                    plot_parameters += (eddy_total,)
+                if 'chan' in calculation_types:
+                    plot_parameters += (channel_total,)
+                if 'eddy_chan_sum' in calculation_types:
+                    plot_parameters += (total_site,)
+
+
+        areavolList = []
+        for date, areavol in areavols.iteritems():
+            areavolParams = [date]
+            for type in calculation_types:
+                finalval = None
+                for key, val in areavol.iteritems():
+                    if type == key:
+                        if parameter_type == 'volume':
+                            finalval = val['Volume']
+                        else:
+                            finalval = val['Area']
+                areavolParams.append(finalval)
+            areavolList.append(areavolParams)
+
                         
         df_rs = create_pandas_dataframe(areavolList, columns=(plot_parameters))
         df_pert_records = df_rs.to_dict('records')

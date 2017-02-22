@@ -65,7 +65,8 @@ AS SELECT
    S.SiteID AS SiteID,
    S.SurveyID AS SurveyID,
    S.SurveyDate AS SurveyDate,
+   SS.SectionTypeID AS SectionTypeID,
    MR.Area AS Area,
    MR.Volume AS Volume,
    MR.Elevation AS Elevation
-FROM (((ModelResultsIncremental MR join SandbarSections SS on((MR.SectionID = SS.SectionID))) join SandbarSurveys S on((SS.SurveyID = S.SurveyID))) join ModelRuns M on((MR.RunID = M.MasterRunID))) where ((M.Published <> 0) and (SS.SectionTypeID = 10));
+FROM (((ModelResultsIncremental MR join SandbarSections SS on((MR.SectionID = SS.SectionID))) join SandbarSurveys S on((SS.SurveyID = S.SurveyID))) join ModelRuns M on((MR.RunID = M.MasterRunID))) where ((M.Published <> 0));
