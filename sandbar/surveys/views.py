@@ -96,6 +96,27 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
 
         def getIncrementalResults(minstage, maxstage):
 
+            # 9: Channel
+            # 10: Eddy,
+            # 13: Eddy Separation 14:
+            # Eddy Reattachment
+            areaDic = {
+                'eddy_s_int_area': [13],
+                'eddy_r_int_area': [14],
+                'sum_reatt_sep_area': [13, 14],
+                'eddy_int_area': [9],
+                'chan_int_area': [10],
+                'ts_int_area': [9, 10],
+            }
+            volumeDic = {
+                'dy_eddy_s_vol': [13],
+                'dy_eddy_r_vol': [14],
+                'dy_eddy_sum_vol': [13, 14],
+                'dy_eddy_int_vol': [9],
+                'dy_chan_int_vol': [10],
+                'dy_ts_int_vol': [9, 10]
+            }
+
             acdb = AlchemDB()
             ora = acdb.create_session()
 
@@ -105,33 +126,45 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
             result_set = query_base.from_statement(sql_statement).all()
 
             dResult = {}
-            sectionTypes = {9: "chan", 10: "eddy", 13: "Eddy Separation", 14: "Eddy Reattachment"}
+
+            # Loop over the results and decide where to put them in our results dictionary
             for dataTuple in result_set:
 
                 surveyDate = dataTuple.SurveyDate
 
                 if not surveyDate in dResult.keys():
-                    dResult[surveyDate] = {}
+                    # The minimum number of columns we can have is 2
+                    numcols = max(len(col_names),2)
+                    dResult[surveyDate] = [None for i in range(0, numcols, 1)]
 
-                sectionType = sectionTypes[dataTuple.SectionTypeID]
-                if not sectionType in dResult[surveyDate]:
-                    dResult[surveyDate][sectionType] = {}
-                    dResult[surveyDate][sectionType]["Area"] = dataTuple.Area
-                    dResult[surveyDate][sectionType]["Volume"] = dataTuple.Volume
+                for idx, col_name in enumerate(col_names):
+                    val = dResult[surveyDate][idx]
 
-            # Loop over the data again and accumulate the totals for each survey
-            for surveyDate, survey in dResult.iteritems():
-                fTotalArea = 0.0
-                fTotalVol = 0.0
-                for sectionName, dValues in survey.iteritems():
-                    fTotalArea += dValues["Area"]
-                    fTotalVol += dValues["Volume"]
+                    # This seems redundant but it helps us later
+                    if col_name == 'calc_date':
+                        val = surveyDate
 
-                survey["eddy_chan_sum"] = {}
-                survey["eddy_chan_sum"]["Area"] = fTotalArea
-                survey["eddy_chan_sum"]["Volume"] = fTotalVol
+                    # Is this an area Calc?
+                    elif col_name in areaDic:
+                        for col, arr in areaDic.iteritems():
+                            if col == col_name and dataTuple.SectionTypeID in arr:
+                                if not val:
+                                    val = dataTuple.Area
+                                else:
+                                    val += dataTuple.Area
 
-            return dResult
+                    # Is this a volume calc
+                    elif col_name in volumeDic:
+                        for col, arr in volumeDic.iteritems():
+                            if col == col_name and dataTuple.SectionTypeID in arr:
+                                if not val:
+                                    val = dataTuple.Volume
+                                else:
+                                    val += dataTuple.Volume
+                    dResult[surveyDate][idx] = val
+
+            # Flatten this from a dictionary back into a list
+            return [d for d in dResult.itervalues()]
 
 
         areavols = getIncrementalResults(minstage, maxstage)
@@ -140,7 +173,6 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
         plot_parameters = ()
         if result_len != 0:
             plot_parameters = ('date',)
-            # NOTE: We comment THIS OUT. BRING IT BACK EVENTUALLY
             # get the pertinent columns from the dataframe
             if plot_sep:
                 plot_parameters += (sandbar_disp_name,)
@@ -152,23 +184,7 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
                 if 'eddy_chan_sum' in calculation_types:
                     plot_parameters += (total_site,)
 
-
-        areavolList = []
-        for date, areavol in areavols.iteritems():
-            areavolParams = [date]
-            for type in calculation_types:
-                finalval = None
-                for key, val in areavol.iteritems():
-                    if type == key:
-                        if parameter_type == 'volume':
-                            finalval = val['Volume']
-                        else:
-                            finalval = val['Area']
-                areavolParams.append(finalval)
-            areavolList.append(areavolParams)
-
-                        
-        df_rs = create_pandas_dataframe(areavolList, columns=(plot_parameters))
+        df_rs = create_pandas_dataframe(areavols, columns=(plot_parameters))
         df_pert_records = df_rs.to_dict('records')
 
         return self.render_to_csv_response(df_pert_records, plot_parameters)

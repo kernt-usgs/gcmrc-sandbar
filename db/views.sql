@@ -9,7 +9,7 @@ AS SELECT
    MR.Elevation AS next_plane_height,
    MR.Area AS area_2d_amt,NULL AS area_3d_amt,
    MR.Volume AS volume_amt
-FROM (((ModelResultsIncremental MR join SandbarSections SS on((MR.SectionID = SS.SectionID))) join SandbarSurveys S on((S.SurveyID = SS.SurveyID))) join ModelRuns R on((MR.RunID = R.MasterRunID))) where ((R.Published <> 0) and (SS.SectionTypeID = 10));
+FROM (((ModelResultsIncremental MR join SandbarSections SS on((MR.SectionID = SS.SectionID))) join SandbarSurveys S on((S.SurveyID = SS.SurveyID))) join ModelRuns R on((MR.RunID = R.MasterRunID))) where ((R.Published <> 0));
 
 CREATE VIEW vw_sitesections
 AS SELECT
