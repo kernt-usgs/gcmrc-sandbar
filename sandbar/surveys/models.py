@@ -30,9 +30,11 @@ class Site(models.Model):
     photo_from = models.CharField(max_length=10, blank=True)
     photo_view = models.CharField(max_length=30, blank=True)
     flow_direction = models.CharField(max_length=30, blank=True)
+
     image_name = models.CharField(max_length=50, blank=True)
     image_name_med = models.CharField(max_length=50, blank=True)
     image_name_small = models.CharField(max_length=50, blank=True)
+
     p_month = models.CharField(max_length=20, blank=True)
     p_day = models.CharField(max_length=2, blank=True)
     p_year = models.CharField(max_length=4, blank=True)
