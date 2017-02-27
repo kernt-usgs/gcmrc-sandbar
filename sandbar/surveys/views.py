@@ -45,9 +45,9 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
             if 'eddy' in calculation_types:
                 if sr_exists == 'SR':
                     if plot_sep:
-                        if sandbar_name == 'sep':
+                        if sandbar_name == 'Eddy - Separation':
                             col_names += ('eddy_s_int_area',)
-                        if sandbar_name == 'reatt':
+                        if sandbar_name == 'Eddy - Reattachment':
                             col_names += ('eddy_r_int_area',)
                     else:
                         col_names += ('sum_reatt_sep_area',)
@@ -61,9 +61,9 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
             if 'eddy' in calculation_types:
                 if sr_exists == 'SR':
                     if plot_sep:
-                        if sandbar_name == 'sep':
+                        if sandbar_name == 'Eddy - Separation':
                             col_names += ('dy_eddy_s_vol',)
-                        if sandbar_name == 'reatt':
+                        if sandbar_name == 'Eddy - Reattachment':
                             col_names += ('dy_eddy_r_vol',)
                     else:
                         col_names += ('dy_eddy_sum_vol',)
@@ -98,47 +98,54 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
 
             # 9: Channel
             # 10: Eddy,
-            # 13: Eddy Separation 14:
-            # Eddy Reattachment
+            # 13: Eddy Separation
+            # 14: Eddy Reattachment
             areaDic = {
+                'chan_int_area': [9],
+                'eddy_int_area': [10],
+                'ts_int_area': [9, 10],
                 'eddy_s_int_area': [13],
                 'eddy_r_int_area': [14],
-                'sum_reatt_sep_area': [13, 14],
-                'eddy_int_area': [9],
-                'chan_int_area': [10],
-                'ts_int_area': [9, 10],
+                'sum_reatt_sep_area': [13, 14]
             }
             volumeDic = {
+                'dy_chan_int_vol': [9],
+                'dy_eddy_int_vol': [10],
+                'dy_ts_int_vol': [9, 10],
                 'dy_eddy_s_vol': [13],
                 'dy_eddy_r_vol': [14],
-                'dy_eddy_sum_vol': [13, 14],
-                'dy_eddy_int_vol': [9],
-                'dy_chan_int_vol': [10],
-                'dy_ts_int_vol': [9, 10]
+                'dy_eddy_sum_vol': [13, 14]
             }
 
             acdb = AlchemDB()
             ora = acdb.create_session()
 
-            sql_base = "SELECT SurveyID, SurveyDate, Elevation, SectionTypeID, Area, Volume FROM vw_incrementalresults WHERE SiteID ={site_id} ORDER BY SurveyDate, Elevation"
-            sql_statement = sql_base.format(site_id=site.id)
+            sql_base = "SELECT SurveyID, SurveyDate, Elevation, SectionTypeID, Area, Volume FROM vw_incrementalresults WHERE SiteID ={site_id} AND (Elevation > {minstage}) AND (Elevation < {maxstage}) ORDER BY SurveyDate, Elevation"
+            sql_statement = sql_base.format(site_id=site.id, minstage=minstage, maxstage=maxstage)
             query_base = ora.query('SurveyID', 'SurveyDate', 'Elevation', 'Area', 'Volume', 'SectionTypeID')
             result_set = query_base.from_statement(sql_statement).all()
 
             dResult = {}
 
             # Loop over the results and decide where to put them in our results dictionary
+            surveySection = None
             for dataTuple in result_set:
 
-                surveyDate = dataTuple.SurveyDate
+                # We only care about the first elevation. Continue if we've already got it.
+                if (dataTuple.SurveyID, dataTuple.SectionTypeID) == surveySection:
+                    continue
+                surveySection = (dataTuple.SurveyID, dataTuple.SectionTypeID)
 
-                if not surveyDate in dResult.keys():
+                surveyDate = dataTuple.SurveyDate
+                sid = dataTuple.SurveyID
+
+                if not sid in dResult.keys():
                     # The minimum number of columns we can have is 2
                     numcols = max(len(col_names),2)
-                    dResult[surveyDate] = [None for i in range(0, numcols, 1)]
+                    dResult[sid] = [None for i in range(0, numcols, 1)]
 
                 for idx, col_name in enumerate(col_names):
-                    val = dResult[surveyDate][idx]
+                    val = dResult[sid][idx]
 
                     # This seems redundant but it helps us later
                     if col_name == 'calc_date':
@@ -148,7 +155,7 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
                     elif col_name in areaDic:
                         for col, arr in areaDic.iteritems():
                             if col == col_name and dataTuple.SectionTypeID in arr:
-                                if not val:
+                                if val is None:
                                     val = dataTuple.Area
                                 else:
                                     val += dataTuple.Area
@@ -157,14 +164,17 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
                     elif col_name in volumeDic:
                         for col, arr in volumeDic.iteritems():
                             if col == col_name and dataTuple.SectionTypeID in arr:
-                                if not val:
+                                if val is None:
                                     val = dataTuple.Volume
                                 else:
                                     val += dataTuple.Volume
-                    dResult[surveyDate][idx] = val
+                    dResult[sid][idx] = val
 
             # Flatten this from a dictionary back into a list
-            return [d for d in dResult.itervalues()]
+            newlist = [d for d in dResult.itervalues()]
+            newlistSorted = sorted(newlist, key=lambda k: k[0])
+
+            return newlistSorted
 
 
         areavols = getIncrementalResults(minstage, maxstage)
