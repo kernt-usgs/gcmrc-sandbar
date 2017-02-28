@@ -89,7 +89,7 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
             minstage = result.StageDischargeA + (result.StageDischargeB * ds_min) + (result.StageDischargeC * (ds_min ** 2))
             maxstage = result.StageDischargeA + (result.StageDischargeB * ds_max) + (result.StageDischargeC * (ds_max ** 2))
 
-            return minstage, maxstage
+            return round(minstage,2), round(maxstage,2)
 
 
         minstage, maxstage = getMaxMinStage()
@@ -120,7 +120,7 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
             acdb = AlchemDB()
             ora = acdb.create_session()
 
-            sql_base = "SELECT SurveyID, SurveyDate, Elevation, SectionTypeID, Area, Volume FROM vw_incrementalresults WHERE SiteID ={site_id} AND (Elevation > {minstage}) AND (Elevation < {maxstage}) ORDER BY SurveyDate, Elevation"
+            sql_base = "SELECT SurveyID, SurveyDate, Elevation, SectionTypeID, Area, Volume FROM vw_incrementalresults WHERE SiteID ={site_id} AND (Elevation >= {minstage}) AND (Elevation < {maxstage}) ORDER BY SurveyDate, Elevation"
             sql_statement = sql_base.format(site_id=site.id, minstage=minstage, maxstage=maxstage)
             query_base = ora.query('SurveyID', 'SurveyDate', 'Elevation', 'Area', 'Volume', 'SectionTypeID')
             result_set = query_base.from_statement(sql_statement).all()
