@@ -48,7 +48,7 @@ def determine_site_survey_types(site_id):
 
 def get_sep_reatt_ids(site_id):
     qs = Sandbar.objects.filter(site_id=site_id)
-    distinct_sandbar_results = [record.id for record in qs]
+    distinct_sandbar_results = list(set([record.sectiontype_id for record in qs]))
     return distinct_sandbar_results
 
 

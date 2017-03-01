@@ -90,6 +90,7 @@ class Survey(models.Model):
     trip_date = models.DateField(null=True)
     calc_type = models.CharField(max_length=20, blank=True)
     sandbar_id = models.IntegerField(null=True)
+    sectiontype_id = models.IntegerField(null=True)
     
     class Meta:
         db_table = 'vw_survey'
@@ -102,6 +103,7 @@ class Sandbar(models.Model):
     
     site = models.ForeignKey(Site)
     sandbar_name = models.CharField(max_length=20)
+    sectiontype_id = models.IntegerField()
     
     class Meta:
         db_table = 'vw_sandbar'

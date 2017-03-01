@@ -176,14 +176,13 @@ def create_df_error_bars(data, final_col_name, columns=('date', 'val_low', 'val_
     return df_final
 
 
-def create_sep_reatt_name(sandbar_id):
-    sandbar_record = Sandbar.objects.get(id=sandbar_id)
+def create_sep_reatt_name(sandbar_record):
     river_mile = sandbar_record.river_mile
     river_side = sandbar_record.river_side
     sandbar_name = sandbar_record.sandbar_name
-    if sandbar_name == 'sep':
+    if sandbar_name.find("Separation") > -1:
         sb_name = 'Separation'
-    elif sandbar_name == 'reatt':
+    elif sandbar_name.find("Reattachment") > -1:
         sb_name = 'Reattachment'
     else:
         sb_name = None

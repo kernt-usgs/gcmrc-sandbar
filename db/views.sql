@@ -57,7 +57,8 @@ CREATE VIEW vw_sandbar
 AS SELECT
    SS.SectionID AS id,
    S.SiteID AS site_id,
-   L.Title AS sandbar_name
+   L.Title AS sandbar_name,
+   SS.SectionTypeID AS sectiontype_id
 FROM ((SandbarSections SS join SandbarSurveys S on((SS.SurveyID = S.SurveyID))) join LookupListItems L on((SS.SectionTypeID = L.ItemID))) group by id,site_id,sandbar_name;
 
 CREATE VIEW vw_incrementalresults

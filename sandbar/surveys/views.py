@@ -1,6 +1,6 @@
 from collections import namedtuple
 from string import Template
-
+from math import isnan
 from django.conf import settings
 from django.db.models import Min, Max
 from django.views.generic import ListView, DetailView, View
@@ -37,9 +37,9 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
         eddy_total = 'Eddy Total - {0} {1}'.format(site.river_mile, site.river_side)
         total_site = 'Total Site - {0} {1}'.format(site.river_mile, site.river_side)
         if plot_sep:
-            sandbar_record = Sandbar.objects.get(id=plot_sep)
+            sandbar_record = Sandbar.objects.filter(site=site, sectiontype_id=plot_sep)[0]
             sandbar_name = sandbar_record.sandbar_name
-            sandbar_disp_name = create_sep_reatt_name(plot_sep)
+            sandbar_disp_name = create_sep_reatt_name(sandbar_record)
         col_names = ('calc_date',) # keep track of the columns that are needed query
         if parameter_type == 'area2d':
             if 'eddy' in calculation_types:
@@ -131,18 +131,14 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
             surveySection = None
             for dataTuple in result_set:
 
-                # We only care about the first elevation. Continue if we've already got it.
-                if (dataTuple.SurveyID, dataTuple.SectionTypeID) == surveySection:
-                    continue
-                surveySection = (dataTuple.SurveyID, dataTuple.SectionTypeID)
-
                 surveyDate = dataTuple.SurveyDate
                 sid = dataTuple.SurveyID
 
                 if not sid in dResult.keys():
                     # The minimum number of columns we can have is 2
-                    numcols = max(len(col_names),2)
+                    numcols = max(len(col_names), 2)
                     dResult[sid] = [None for i in range(0, numcols, 1)]
+                    dComplete = [False for i in range(0, numcols, 1)]
 
                 for idx, col_name in enumerate(col_names):
                     val = dResult[sid][idx]
@@ -152,22 +148,25 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
                         val = surveyDate
 
                     # Is this an area Calc?
-                    elif col_name in areaDic:
+                    elif col_name in areaDic and not dComplete[idx]:
                         for col, arr in areaDic.iteritems():
                             if col == col_name and dataTuple.SectionTypeID in arr:
                                 if val is None:
                                     val = dataTuple.Area
                                 else:
                                     val += dataTuple.Area
+                                dComplete[idx] = True
 
                     # Is this a volume calc
-                    elif col_name in volumeDic:
+                    elif col_name in volumeDic and not dComplete[idx]:
                         for col, arr in volumeDic.iteritems():
                             if col == col_name and dataTuple.SectionTypeID in arr:
                                 if val is None:
                                     val = dataTuple.Volume
                                 else:
                                     val += dataTuple.Volume
+                                dComplete[idx] = True
+
                     dResult[sid][idx] = val
 
             # Flatten this from a dictionary back into a list
@@ -196,6 +195,13 @@ class AreaVolumeCalcsVw(CSVResponseMixin, View):
 
         df_rs = create_pandas_dataframe(areavols, columns=(plot_parameters))
         df_pert_records = df_rs.to_dict('records')
+
+        # Strip out NAN values
+        for record in df_pert_records:
+            for idx, col in record.iteritems():
+                if type(col) == float and isnan(col):
+                    record[idx] = None
+
 
         return self.render_to_csv_response(df_pert_records, plot_parameters)
 

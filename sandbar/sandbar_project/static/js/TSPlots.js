@@ -93,6 +93,15 @@ SB.TSPlots = function (graphsDivId /* id of div containing the divs for each par
 										}
 										// Update the selected graphs
 										var data = resp.responseText;
+										/**
+										THIS IS A TEMPORARY HACK TO GET VOLUME WORKING
+										UNTIL WE CAN ESTABLISH A WAY TO GET ERROR 
+										BARS BACK INTO THE APP
+										**/
+										if (parentParam == "volume"){
+
+											data = data.replace(/,([0-9.]+)/gm, ",$1;$1;$1"); 
+										}										
 										var csvHeader = data.slice(0, data.indexOf('\n'));
 										var csvHeaderLineBreak = csvHeader.replace(/(\r\n|\n|\r)/gm,""); //remove line breaks
 										var headerArray = csvHeaderLineBreak.split(",");
